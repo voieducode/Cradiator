@@ -10,19 +10,18 @@ namespace Cradiator.Config
 {
     public class ViewSettingsParser
     {
-        const string ProjectRegex = "project-regex";
-        const string CategoryRegex = "category-regex";
-        const string ServerRegex = "server-regex";
-        const string Url = "url";
-        const string Skin = "skin";
-        const string ViewName = "name";
-        const string ShowOnlyBroken = "showOnlyBroken";
-        const string ShowServerName = "showServerName";
-        const string ShowOutOfDate = "showOutOfDate";
-        const string OutOfDateDifferenceInMinutes = "outOfDateDifferenceInMinutes";
+        private const string ProjectRegex = "project-regex";
+        private const string CategoryRegex = "category-regex";
+        private const string ServerRegex = "server-regex";
+        private const string Url = "url";
+        private const string Skin = "skin";
+        private const string ViewName = "name";
+        private const string ShowOnlyBroken = "showOnlyBroken";
+        private const string ShowServerName = "showServerName";
+        private const string ShowOutOfDate = "showOutOfDate";
+        private const string OutOfDateDifferenceInMinutes = "outOfDateDifferenceInMinutes";
 
-
-        readonly XDocument _xdoc;
+        private readonly XDocument _xdoc;
 
         public ViewSettingsParser(TextReader xml)
         {
@@ -42,20 +41,35 @@ namespace Cradiator.Config
         {
             return new ReadOnlyCollection<ViewSettings>(
                 (from view in _xdoc.Elements("configuration")
-                                   .Elements("views")
-                                   .Elements("view")
+                     .Elements("views")
+                     .Elements("view")
                  select new ViewSettings
-                            {   
-                                URL = view.Attribute(Url).Value,
-                                ProjectNameRegEx = view.Attribute(ProjectRegex).Value,
-                                CategoryRegEx = view.Attribute(CategoryRegex).Value,
-                                ServerNameRegEx = view.Attribute(ServerRegex).Value,
-                                SkinName = view.Attribute(Skin).Value,
-                                ViewName = view.Attribute(ViewName).Value,
-                                ShowOnlyBroken = bool.Parse(view.Attribute(ShowOnlyBroken).Value),
-                                ShowServerName = bool.Parse(view.Attribute(ShowServerName).Value),
-                                ShowOutOfDate = bool.Parse(view.Attribute(ShowOutOfDate).Value),
-                                OutOfDateDifferenceInMinutes = int.Parse(view.Attribute(OutOfDateDifferenceInMinutes).Value)
+                            {
+                                URL = view.Attribute(Url) == null ? "" : view.Attribute(Url).Value,
+                                ProjectNameRegEx =
+                                    view.Attribute(ProjectRegex) == null ? ".*" : view.Attribute(ProjectRegex).Value,
+                                CategoryRegEx =
+                                    view.Attribute(CategoryRegex) == null ? ".*" : view.Attribute(CategoryRegex).Value,
+                                ServerNameRegEx =
+                                    view.Attribute(ServerRegex) == null ? ".*" : view.Attribute(ServerRegex).Value,
+                                SkinName = view.Attribute(Skin) == null ? "StackPhoto" : view.Attribute(Skin).Value,
+                                ViewName = view.Attribute(ViewName) == null ? "" : view.Attribute(ViewName).Value,
+                                ShowOnlyBroken =
+                                    view.Attribute(ShowOnlyBroken) == null
+                                        ? false
+                                        : bool.Parse(view.Attribute(ShowOnlyBroken).Value),
+                                ShowServerName =
+                                    view.Attribute(ShowServerName) == null
+                                        ? false
+                                        : bool.Parse(view.Attribute(ShowServerName).Value),
+                                ShowOutOfDate =
+                                    view.Attribute(ShowOutOfDate) == null
+                                        ? false
+                                        : bool.Parse(view.Attribute(ShowOutOfDate).Value),
+                                OutOfDateDifferenceInMinutes =
+                                    view.Attribute(OutOfDateDifferenceInMinutes) == null
+                                        ? 0
+                                        : int.Parse(view.Attribute(OutOfDateDifferenceInMinutes).Value)
                             }).ToList());
         }
 
@@ -80,8 +94,8 @@ namespace Cradiator.Config
         public string CreateUpdatedXml(IViewSettings settings)
         {
             var view1 = _xdoc.Elements("configuration")
-                             .Elements("views")
-                             .Elements("view").First(); // only used to update a view when there is 1
+                .Elements("views")
+                .Elements("view").First(); // only used to update a view when there is 1
 
             view1.Attribute(Url).Value = settings.URL;
             view1.Attribute(ProjectRegex).Value = settings.ProjectNameRegEx;
@@ -96,11 +110,11 @@ namespace Cradiator.Config
 
             var xml = new StringBuilder();
             using (var xmlWriter = XmlWriter.Create(xml, new XmlWriterSettings
-                                    {
-                                        OmitXmlDeclaration = true,
-                                        NewLineHandling = NewLineHandling.None,
-                                        Indent = true,
-                                    }))
+                                                             {
+                                                                 OmitXmlDeclaration = true,
+                                                                 NewLineHandling = NewLineHandling.None,
+                                                                 Indent = true,
+                                                             }))
             {
                 _xdoc.WriteTo(xmlWriter);
             }
